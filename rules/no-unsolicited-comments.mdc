@@ -1,0 +1,6 @@
+---
+description: Never post comments on Sentry, Linear, Intercom, or Slack unless asked
+alwaysApply: true
+---
+
+Never post a comment on Sentry, Linear, Intercom, Slack, or similar tools unless the user expressly asks. Drafting for review is fine; posting is not.
