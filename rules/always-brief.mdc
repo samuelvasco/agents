@@ -1,0 +1,12 @@
+---
+description: Default to brief replies — simple, concise, no walls of text
+alwaysApply: true
+---
+
+Follow the **brief** skill (`~/.agents/skills/brief/SKILL.md`) in every reply unless the user explicitly asks for depth (long write-up, tutorial, full spec, etc.).
+
+- Simple, concise prose; no walls of text.
+- Lead with the answer or outcome; trim repetition and filler.
+- Use lists or short sections when there are several points; skip optional follow-ups unless they unblock the task.
+
+When the user invokes `/brief`, tighten further — fewer words, same facts.

@@ -6,9 +6,10 @@ description: >-
   feedback from noise. When the PR is in a Graphite stack, evaluates against the
   whole stack (especially upstack PRs) so feedback is not re-litigated or fixed
   in the wrong layer. Use when reviewing PR threads, reviewer comments, or
-  architectural suggestions before acting on them. Only evaluates open threads —
-  skip resolved or outdated review comments. Validates merge readiness (up to date,
-  no conflicts) once at the end — does not poll CI or subscribe to updates.
+  architectural suggestions before acting on them. Works all open review threads
+  and resolves every bot thread it can.   Validates merge readiness (up to date,
+  no conflicts) once at the end. Runs the repo's local verify gate before any
+  push — does not poll GitHub CI or subscribe to check updates.
 disable-model-invocation: true
 ---
  
@@ -18,7 +19,7 @@ Filter technical feedback against **this repo's** rules, patterns, and implement
  
 ## Constraints
  
-- **Open threads only** — evaluate unresolved PR review comments only. Skip threads marked resolved or outdated. Do not re-litigate closed feedback. "Already addressed in the diff" applies to the **exact defect** (crash, missing field), including fixes that live only in **upstack** Graphite PRs — not to the product question that defect implied.
+- **Open threads** — list every unresolved PR review thread; do not re-open threads GitHub already marks resolved. For each open thread: evaluate, then **resolve it** if you can (reply first on bot threads). Leave open **only** human-authored threads, or bot threads where the fix needs user approval ([Acting on verdicts](#acting-on-verdicts)). Already fixed, outdated, [NO-ACTION], or deferred upstack → reply and resolve (bots). Do not re-litigate closed feedback. "Already addressed in the diff" applies to the **exact defect** (crash, missing field), including fixes that live only in **upstack** Graphite PRs — not to the product question that defect implied.
 - Include the **whole comment** when referencing a thread.
 - **Skeptical by default** — burden of proof is on the suggestion. Default verdict is [NO-ACTION] until the investigation below turns up concrete evidence otherwise.
 - **Investigate before verdict** — never categorize from the comment text alone. Confirm against actual code (`path:line`) and repo patterns via the sub-agents, even when the suggestion sounds reasonable or the reviewer sounds confident.
@@ -30,6 +31,8 @@ Filter technical feedback against **this repo's** rules, patterns, and implement
 ## Graphite stack (when applicable)
 
 Before categorizing comments, determine whether the evaluated PR sits in a **Graphite stack**. If `gt` is available in the repo checkout, run `gt log short` (or `gt ls`) from that repo and map each branch to its GitHub PR (`gh pr view --json number,title,url,headRefName,baseRefName`). Read the repo's stacked-PR skill if present (e.g. `.cursor/skills/stacked-prs/SKILL.md`).
+
+**Stack base must be the parent branch, not synthetic:** If `baseRefName` is `graphite-base/*`, or `git merge-base origin/<parent-headRefName> origin/<child-headRefName>` is not the parent tip, the child is **not** up to date with the downstack PR — run the verify/reconcile steps in that skill **before** comparing files to "the parent" or claiming merge readiness. Do not use `origin/graphite-base/*` as the parent PR surface.
 
 Treat **upstack** PRs (descendants above the current branch) as part of the evidence surface:
 
@@ -48,7 +51,7 @@ Spawn **parallel** Task sub-agents before categorizing:
 3. **Coupling analyzer** (`explore`) — only when feedback proposes structural moves; trace imports/boundaries.
 4. **Security reviewer** (`explore`) — always run. Check whether the current code or the suggested change introduces, removes, or leaves unaddressed a security risk: auth/authz, input validation, injection, secrets handling, permissions, data exposure. Cite `path:line` for any finding.
 5. **Regression checker** (`explore`) — always run. Trace call sites, downstream consumers, and existing tests for the code the feedback targets; flag if accepting or dismissing the suggestion would break current behavior elsewhere.
-6. **Stack scout** (`explore`) — run when `gt log short` shows more than one branch in the stack. For each **upstack** PR, summarize whether open review threads on the **current** PR are already addressed there; return PR numbers, titles, and `path:line` in the fixing PR.
+6. **Stack scout** (`explore`) — run when `gt log short` shows more than one branch in the stack. Report whether the current PR's `baseRefName` equals the downstack `headRefName` (not `graphite-base/*`) and whether the child merge-base is the parent tip. For each **upstack** PR, summarize whether open review threads on the **current** PR are already addressed there; return PR numbers, titles, and `path:line` in the fixing PR.
 
 Detect repo from paths (`react-native/`, `web-app/`, `api/`). For quality bar details, read [implementation-quality-review](../sam-implementation-quality-review/SKILL.md) — apply its criteria when judging whether feedback is valid.
  
@@ -100,15 +103,28 @@ When feedback touches these, verify against code — cite `path:line`:
 - **Tests** — behavior not trivia; no theater assertions
 ## Acting on verdicts
  
-**Default (no human gate):** in-scope bot [CRITICAL] and accepted [SUGGESTION] fixes, [NO-ACTION] dismissals, and stack deferrals — implement (or reply-only), **push the branch**, reply on each thread, then resolve.
+**Default:** resolve as many open threads as possible. In-scope bot [CRITICAL] and accepted [SUGGESTION] fixes, [NO-ACTION] dismissals, already-addressed/outdated comments, and stack deferrals — implement when needed (or reply-only), run [Before push (local gate)](#before-push-local-gate), **push the branch**, reply on each bot thread, **then resolve**.
 
-- **Human threads** — never reply, never resolve, never implement. Evaluate, and hand the verdict to the user to act on.
+- **Leave open** — human-authored threads only, plus bot threads blocked on user approval (scope, API/behavior, pattern). Never reply, resolve, or implement human threads; hand the verdict to the user.
 
 **Ask the user before implementing when** the fix would **materially expand scope** (files outside this PR's diff, new modules, refactors, deps/config), **change published/API or shared behavior** (see cost–benefit #6), or **diverge from repo patterns** without hard evidence the existing pattern cannot work. Routine in-diff fixes, N+1 fetches, guards, and convention-aligned tweaks: do not wait. Never silently widen the PR.
 
-- **Bot threads** (CodeRabbit, Copilot, Cursor Bugbot, etc.) — apply fixes or reply (what changed, one-line dismiss, or defer to upstack PR #X); never resolve without replying.
+- **Bot threads** (CodeRabbit, Copilot, Cursor Bugbot, etc.) — apply fixes or reply (what changed, one-line dismiss, or defer to upstack PR #X); never resolve without replying. Post via the environment's PR comment path (e.g. cloud: `ManagePullRequest` `post_comment`; local: GitHub MCP or `gh` when authenticated). **If the reply cannot be posted** (permissions, threading, tool error): do **not** resolve that thread on GitHub; in the evaluation output, **notify the user** with thread id/URL, the full intended reply markdown, and what failed — **needs you: post this reply** (or fix GitHub auth). Never resolve a bot thread silently when no comment appeared on the PR.
 - **Stack deferral** — no duplicate fix on this PR when upstack already has it; reply that it lives in PR #X, resolve. Do not delete or reshape code upstack PRs depend on — flag stack layering instead.
-- **Push & merge readiness** — after any code change, commit and push. At **end of the run**, **once** (no polling, no waiting on checks, no live subscriptions): confirm the PR is **up to date with its base** and **mergeable** — no merge conflicts (`gh pr view --json mergeable,mergeStateStatus,baseRefName`; `mergeable` not `CONFLICTING`, not stuck `BEHIND` without updating). Rebase/merge onto the target as the repo normally does; on Graphite stacks, restack only per the repo stacked-PR skill — **do not** run stack-wide `gt sync` that force-pushes under active review without user approval. If still not mergeable after that, report what blocks (conflicts, base drift) — do not babysit CI.
+
+### Before push (local gate)
+
+After **any** code change and **before** commit or push:
+
+1. Discover the repo's standard gate from `AGENTS.md`, `CLAUDE.md`, `README.md`, `Makefile`, or `package.json` (e.g. `make verify`, `make ai-verify`) — same bar you would use before opening a PR; do not assume npm vs poetry vs make.
+2. Run it; fix failures your changes introduced. Do not push while lint, format, typecheck, or the repo's required tests fail locally.
+3. Never `git commit --no-verify` or `git push --no-verify` unless the user explicitly asks. Pre-commit hooks are backup, not a substitute for running the gate.
+
+Local gate is **not** CI babysitting: do not poll GitHub Checks, wait on remote workflows, or subscribe to status updates. For green remote CI after push, the user can run `/babysit`.
+
+### Push & merge readiness
+
+After the local gate passes: commit and push. At **end of the run**, **once** (no polling, no waiting on remote checks, no live subscriptions): confirm the PR is **up to date with its downstack parent branch** (per stacked-PR skill: `baseRefName` = parent `headRefName`, not `graphite-base/*`; child merge-base = parent tip) **and** **mergeable** — no merge conflicts (`gh pr view --json mergeable,mergeStateStatus,baseRefName`; `mergeable` not `CONFLICTING`). If the base is synthetic or parent tip has diverged, report **stack out of date** and reconcile via `gt restack` + `gt submit --stack` per stacked-PR skill — **do not** run stack-wide `gt sync --force` under active review without user approval.
 ## Output format
  
 List only — **no tables**. One short block per **open** comment, in thread order. Omit resolved/outdated threads entirely.
@@ -144,11 +160,11 @@ Aim for **one short paragraph** after the verdict: what the reviewer is pointing
 - End with **VERDICT:** `ADDRESS` if any CRITICAL; `OPTIONAL` if only SUGGESTION; `DISMISS` if all NO-ACTION.
 ## Definition of done
  
-1. Only **open** threads reviewed; resolved/outdated threads excluded
+1. Every **open** thread reviewed; GitHub-resolved threads skipped; open bot threads resolved unless human or needs approval
 2. Every evaluated comment quoted in full
 3. Each verdict backed by rule, pattern, or `path:line` — not opinion, and with no open question left dangling
 4. Each block is easy to read in one pass: the paragraph already connects the comment to the code to the verdict — no leftover dots for the reader to join
 5. Actionable items include minimal code, not drive-by refactors
-6. Bot threads: in-scope fixes applied, each thread replied to and resolved. **Human threads:** evaluated only — never replied to, resolved, or implemented, regardless of verdict
-7. In-scope bot work **pushed**; **one** merge check: PR **up to date with base**, **no merge conflicts**, `mergeable`/`mergeStateStatus` clean — or blockers reported. Nothing outside this PR's diff without user approval. No CI polling or live update subscriptions
+6. Bot threads: in-scope fixes applied, each thread replied to and resolved. Any bot thread **not** replied to on GitHub (post failed) is left **unresolved** and called out for the user with copy-paste reply text. **Human threads:** evaluated only — never replied to, resolved, or implemented, regardless of verdict
+7. In-scope bot work: [Before push (local gate)](#before-push-local-gate) passed, then **pushed**; **one** merge check: PR **up to date with downstack parent branch** (real `baseRefName`, not stale `graphite-base/*`), **no merge conflicts**, `mergeable`/`mergeStateStatus` clean — or blockers reported (including stack base drift, or local gate failures not yet fixed). Nothing outside this PR's diff without user approval. No GitHub CI polling or live update subscriptions
 8. Graphite stack: upstack checked before implementing here; no duplicate fixes on the wrong layer
