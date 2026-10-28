@@ -176,6 +176,7 @@ Fixes must **remove the condition that made the failure possible**, not hide the
 - **Simple** — smallest change that fully addresses the cause; no speculative refactors
 - **Robust** — handles the edge case class, not just the one reported input
 - **Decoupled** — fix at the right layer; do not spread special cases across call sites
+- Before you write defensive code, you need to understand the whole context and motivation behind the implementation and consider improving the architecture instead of adding the defensive condition. ANY DEFENSIVE CONDITIONAL MUST BE ACCOMPANIED BY A SIMPLE COMMENT EXPLAINING THE WHY AND THE NECESSARY CONTEXT
 - **Conventional** — match existing patterns in the repo; read surrounding code first
 - **No hacks** — no TODO-without-ticket band-aids, feature-flag gating of broken behavior, or "works on my machine" env checks in business logic
 

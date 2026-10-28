@@ -92,6 +92,7 @@ Apply the [simplicity and necessity rubric](../sam-implementation-quality-review
 - **Reuse** — extend existing code before adding parallel implementations
 - **Pattern-faithful** — match the repo's existing solution to this class of problem by default. A different approach is a last resort, not a style choice — reach for it only once you have concrete evidence the existing pattern breaks, and mark the deviation `[WARNING-PATTERN-DRIFT]` with the evidence, right where it happens.
 - **Robust** — handle real failure modes the ticket implies; not every theoretical edge
+- Before you write defensive code, you need to understand the whole context and motivation behind the implementation and consider improving the architecture instead of adding the defensive condition. ANY DEFENSIVE CONDITIONAL MUST BE ACCOMPANIED BY A SIMPLE COMMENT EXPLAINING THE WHY AND THE NECESSARY CONTEXT
 - **Secure** — auth, input validation, secrets, PII, and money paths get extra care
 - **No shortcuts dressed as simplicity** — don't special-case, silently swallow errors, hardcode a value to sidestep a real problem, or bypass a check just to make the diff smaller or the tests pass. If the simple path and the correct path diverge, take the correct one and say why in the handoff.
 
