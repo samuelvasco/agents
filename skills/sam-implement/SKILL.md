@@ -17,7 +17,7 @@ Implement the ticket below. Follow this workflow exactly.
 2. **Be skeptical** — verify every path, API, and assumption in the ticket against the codebase. Push back with evidence when the spec is wrong.
 3. **Ask or research** — research deeply first; ask the user only when blocked. Batch questions.
 4. **Stay lean** — targeted reads and searches; don't load unnecessary files into context.
-5. **Follow this repo** — read `AGENTS.md`, `CLAUDE.md`, `README.md`, `.cursor/rules/`, and relevant `.cursor/skills/` before implementing. Never assume patterns from another repo.
+5. **Follow this repo** — read applicable `AGENTS.md` files and their authoritative rule and skill locations before implementing; consult `README.md` and other instruction files when applicable. Never assume legacy paths or patterns from another repo.
 6. **Simple and correct** — smallest diff that meets acceptance criteria, using the simplest design that is actually correct. Reuse existing code. No over-engineering or over-defensive code. Prefer early returns / guard clauses over nested conditionals or deep branching. Simplicity is never an excuse for a hack: if the correct fix requires touching more files, adding a real abstraction, or a larger diff, do that — never patch around, special-case, or paper over a problem just to keep the change small.
 7. **Follow existing patterns — drift only with hard evidence** — match how this repo already solves this kind of problem (naming, structure, error handling, state management, module boundaries). Don't introduce a new pattern, library, or approach because it's more familiar or "better" in the abstract. Only diverge when there is concrete evidence the existing pattern cannot work here (a real constraint you can point to — a type conflict, a broken invariant, a documented limitation) — not preference, not "this is cleaner." Every time you diverge, flag it to the user inline with `[WARNING-PATTERN-DRIFT]` followed by the pattern you didn't follow and the concrete evidence forcing the divergence. List every drift again in the Phase 5 handoff.
 8. **Gate before done** — run the repo's lint, test, and audit commands; fix failures you introduced.
@@ -29,9 +29,9 @@ Implement the ticket below. Follow this workflow exactly.
 
 1. **Read the ticket** — restate goal, acceptance criteria, and non-goals in your own words.
 2. **Discover repo rules** — read before searching code:
-    - `AGENTS.md`, `CLAUDE.md`, `README.md` (if present)
-    - `.cursor/rules/` (all applicable rules)
-    - `.cursor/skills/` (load only skills relevant to this ticket)
+    - Applicable `AGENTS.md` files and the rule and skill locations they identify
+    - `README.md` and other applicable instruction files
+    - Only the domain skills relevant to this ticket
 3. **Identify the repo** — follow that repo's conventions only.
 
 Start by restating the ticket and listing what you need to verify before writing any code.
@@ -81,6 +81,8 @@ Write a short plan (3–7 bullets):
 
 **Scope discipline:** smallest correct diff — favor the design with the fewest moving parts, least branching, and fewest new abstractions that still solves the problem properly. No drive-by refactors, no speculative abstractions, no "while I'm here" changes. If achieving real simplicity means restructuring more than a first glance suggests (e.g. flattening a nested conditional into guard clauses, or fixing the actual root cause instead of a downstream symptom), include that in the plan — small-looking hacks are not simpler, they're technical debt.
 
+Apply the [simplicity and necessity rubric](../sam-implementation-quality-review/SKILL.md#2-simplicity--necessity) to the plan and again to the final diff before handoff.
+
 ## Phase 3: Implement
 
 ### Code principles
@@ -96,7 +98,7 @@ Write a short plan (3–7 bullets):
 ### Anti-patterns (avoid)
 
 - Over-engineering (premature abstraction, unnecessary indirection)
-- Over-defensiveness (catch-all try/catch, redundant null checks on typed data)
+- Over-defensiveness (catch-all try/catch, checks redundant after verified runtime validation)
 - Deep nesting / arrow code — restructure with early returns instead of adding another indentation level
 - Patching a symptom instead of fixing the underlying cause, even when the patch is a smaller diff
 - Introducing a new pattern, library, or structure when an existing one already solves this class of problem — without hard evidence and a `[WARNING-PATTERN-DRIFT]` flag
