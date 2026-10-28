@@ -30,7 +30,7 @@ Filter technical feedback against **this repo's** rules, patterns, and implement
 - **Write for a person, not a brief.** Short, natural sentences. Name the file and what it does in one clause, then say what that means for the comment — do not make the reader assemble the argument. No jargon without a plain-English gloss. No dumps of every file you opened. Repeat nothing the quote or verdict already said.
 ## Graphite stack (when applicable)
 
-Before categorizing comments, determine whether the evaluated PR sits in a **Graphite stack**. If `gt` is available in the repo checkout, run `gt log short` (or `gt ls`) from that repo and map each branch to its GitHub PR (`gh pr view --json number,title,url,headRefName,baseRefName`). Read the repo's stacked-PR skill if present (e.g. `.cursor/skills/stacked-prs/SKILL.md`).
+Before categorizing comments, determine whether the evaluated PR sits in a **Graphite stack**. If `gt` is available in the repo checkout, run `gt log short` (or `gt ls`) from that repo and map each branch to its GitHub PR (`gh pr view --json number,title,url,headRefName,baseRefName`). Read the repo's stacked-PR skill at the authoritative location identified by its applicable `AGENTS.md` files.
 
 **Stack base must be the parent branch, not synthetic:** If `baseRefName` is `graphite-base/*`, or `git merge-base origin/<parent-headRefName> origin/<child-headRefName>` is not the parent tip, the child is **not** up to date with the downstack PR — run the verify/reconcile steps in that skill **before** comparing files to "the parent" or claiming merge readiness. Do not use `origin/graphite-base/*` as the parent PR surface.
 
@@ -47,7 +47,7 @@ When stack context matters, pull upstack diffs with `gh pr diff <number>` (or br
 Spawn **parallel** Task sub-agents before categorizing:
  
 1. **Pattern Scanner** (`explore`) — how similar problems are solved today; return paths + snippets.
-2. **Rule Checker** (`explore`) — relevant `.cursor/rules/` and domain skills for the topic.
+2. **Rule Checker** (`explore`) — applicable `AGENTS.md` files and the relevant rules and domain skills at the locations they identify; do not assume legacy `.cursor/` paths.
 3. **Coupling analyzer** (`explore`) — only when feedback proposes structural moves; trace imports/boundaries.
 4. **Security reviewer** (`explore`) — always run. Check whether the current code or the suggested change introduces, removes, or leaves unaddressed a security risk: auth/authz, input validation, injection, secrets handling, permissions, data exposure. Cite `path:line` for any finding.
 5. **Regression checker** (`explore`) — always run. Trace call sites, downstream consumers, and existing tests for the code the feedback targets; flag if accepting or dismissing the suggestion would break current behavior elsewhere.
@@ -63,7 +63,7 @@ Detect repo from paths (`react-native/`, `web-app/`, `api/`). For quality bar de
  
 1. **Real problem?** Bug, security risk, regression, rule violation, race — vs speculation.
 2. **Proportional severity?** Impact, not review tone.
-3. **Material impact?** Cosmetic-only or theoretical → reject. A same-queryset `select_related` / `prefetch_related` (or equivalent free fetch) **is** material — the API N+1 lens. Accept as [SUGGESTION] when it adds no branching, files, or abstractions.
+3. **Material impact?** Cosmetic-only or theoretical → reject. Concrete maintainability problems count: a name that obscures the domain, unused evidence fields, duplicated rules, or unnecessary coupling. Apply the [simplicity and necessity rubric](../sam-implementation-quality-review/SKILL.md#2-simplicity--necessity), including its reachable-defense and upstream-guarantee checks. A same-queryset `select_related` / `prefetch_related` (or equivalent free fetch) **is** material — the API N+1 lens. Accept as [SUGGESTION] when it adds no branching, files, or abstractions.
 4. **Already handled?** Types, guards, existing patterns, or an **upstack stack PR** may cover the **named defect**. A guard that 422s a state does not answer whether that state should be in the flow.
 5. **Justified by a current need?** Reject speculative future-proofing for scenarios that don't exist in this diff or codebase today.
 6. **Integrator / published contract?** Stricter matching, validation, or side-effect ordering may satisfy a bot but break documented Foundation or external API behavior. Check OpenAPI `help_text`, domain skills (e.g. `foundation-api`), and existing external tests before accepting; prefer parity with established main-api flows over new edge cases.
@@ -78,14 +78,14 @@ Detect repo from paths (`react-native/`, `web-app/`, `api/`). For quality bar de
 ### Reject as [NO-ACTION] when feedback
  
 - Invents problems without evidence
-- Demands abstractions for one call site
+- Demands helpers without a domain, boundary, or readability purpose
 - Confuses preference with correctness
 - Over-DRY that increases coupling
 - Drive-by large refactors on a small PR
-- Defensive code for impossible states (types/router/guards already exclude). Does not apply to the product question behind that state (e.g. a 422 on walletless still leaves "should this object be assignable / payable?")
+- Defensive code for states excluded by verified runtime constraints or guards. Does not apply to the product question behind that state (e.g. a 422 on walletless still leaves "should this object be assignable / payable?")
 - Premature memoization without profiling
 - Patches over smells (ref-gated effects, mount-started user flows) instead of refactor
-- Extra layers, single-use utilities, or `??` chains for values guaranteed upstream
+- Extra layers or utilities without a domain, boundary, or readability purpose, or `??` chains redundant after verified upstream runtime validation
 - No material or observable effect on behavior, risk, or maintainability — **not** a missing `select_related` / `prefetch_related` on a query this code already runs and then dereferences
 - Speculative future-proofing with no concrete current use case
 - Cosmetic reordering (e.g. alphabetizing an existing list) with no stated reason — it inflates the diff and review surface for no benefit; only accept if the comment justifies why order matters here (e.g. lookup performance, a lint rule, avoiding merge conflicts)
@@ -95,7 +95,7 @@ Detect repo from paths (`react-native/`, `web-app/`, `api/`). For quality bar de
 When feedback touches these, verify against code — cite `path:line`:
  
 - **Security** — weigh real, evidenced risk seriously (auth, injection, secrets, data exposure, permissions) and don't wave it through as "minor." But don't invent threat models either — a security claim needs a concrete exploitable path or a rule violation, same evidence bar as everything else. "Could theoretically be misused" without a reachable path is [NO-ACTION], not [CRITICAL].
-- **Simplicity** — every abstraction must earn its place; inline if one call site
+- **Simplicity** — apply the shared rubric; one call site does not disqualify a readable domain step or I/O boundary
 - **Effects/refs (frontends)** — flag ref-gated effects, mount-started auth/pay/submit, mutation `isSuccess` watchers; prefer handlers, derive-at-render, Query hooks
 - **Architecture** — one way per concern (Query vs zustand, hooks vs screen logic, `operations/` vs views)
 - **Concurrency** — double-submit, parallel mutations, stale reads; sync refs only with documented reason
