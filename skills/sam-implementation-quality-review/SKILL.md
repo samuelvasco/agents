@@ -26,13 +26,7 @@ description: "Thorough implementation quality review across the Truss monorepo (
 
 ## Detect repo & load local rules
 
-Determine repo from file paths, then read **only** what applies:
-
-| Repo | Path signal | Also read |
-|------|-------------|-----------|
-| Mobile | `react-native/` | `.cursor/rules/architecture.mdc`, `.cursor/skills/effect-free-react/SKILL.md`; domain skills (e.g. `stytch-migration`) when relevant |
-| Web | `web-app/` | `.cursor/rules/react-effects.mdc`, `.cursor/skills/effect-free-react/SKILL.md`, `.cursor/rules/business-logic-hooks.mdc` |
-| API | `api/` | `.cursor/rules/coding-pitfalls.mdc`, `.cursor/rules/test-philosophy.mdc`; domain skills when relevant |
+Determine the repository from the actual checkout. Read its applicable `AGENTS.md` files and follow their authoritative rule and skill locations; do not assume legacy `.cursor/` paths. Load only the relevant domain guidance, including effect-free React for frontend effects and the repository's coding and testing rules.
 
 Do not duplicate full rule files — cite violations with `path:line`.
 
@@ -59,16 +53,17 @@ Quality review:
 
 ### 2. Simplicity & necessity
 
-Ask for **every** function, type, constant, and branch:
+Use this rubric during planning, implementation, and review:
 
-| Question | Fail if |
-|----------|---------|
-| Can this be inlined without losing clarity? | Extra layer for one call site |
-| Does this duplicate logic centralized elsewhere (in-repo or cross-client)? | Copy-paste business rules |
-| Is this abstraction used more than once? | Single-use "utility" |
-| Would removing it break a **real** scenario? | Code for hypothetical futures |
+- **Current necessity:** For each added field, option, branch, helper, and dependency, identify its present consumer, required behavior, or invariant. Remove speculative collection and duplicated logic; reuse the owning implementation.
+- **Domain names:** Functions name an action or predicate and its subject; variables name their domain meaning, including private helpers and local values. A reader should follow the flow without reverse engineering it. Do not introduce opaque names such as `_identity`, `_family`, or `_local_family`; name the actual snapshot, related transactions, or check.
+- **Reachable defenses:** Identify the reachable failure and check the actual upstream guarantee before adding validation, fallbacks, retries, or state comparisons. Type annotations alone do not validate runtime input. Validate untrusted input at its owning boundary; do not repeat checks already enforced there or invent impossible states. Preserve required authorization, payment, idempotency, and concurrency safeguards.
+- **Useful separation:** A single-use helper can name a domain step, isolate I/O, or improve readability. Reject pass-through wrappers and premature generic utilities, not helpers based on call count. Trace actual imports and responsibilities before claiming coupling; split or combine only when it clarifies ownership or removes duplication.
+- **Explained bounds:** Give non-obvious numeric limits, timeouts, and traversal caps a short nearby why-comment or source. State the real tradeoff when a value is a chosen default; do not invent a provider guarantee. Follow the repository's comment conventions.
 
-**Overengineering:** generic hooks/components for one screen, unused options, parallel paths that could share one primitive, defensive `??` / `get()` chains for values already guaranteed upstream.
+For each finding, identify the unnecessary mechanism, the smallest useful alternative, and why required behavior and safeguards survive. PASS is valid when nothing needs changing; do not invent findings to fill a quota.
+
+**Overengineering:** generic hooks/components with unnecessary configuration or indirection, unused options, parallel paths that could share one primitive, defensive `??` / `get()` chains for values already guaranteed upstream.
 
 **Overdefensive:** checks after early return; catch-all handlers for impossible states; retry loops without a documented contract; fallback paths the router/guard already prevents.
 
@@ -180,7 +175,7 @@ No unbounded loops. No retry storms.
 | Derived state + effect | Derive at render |
 | fetch + useState in effect | Query hook |
 | Mutation success watcher | `mutate(_, { onSuccess })` |
-| Extra wrapper for one call site | Inline or shared primitive |
+| Pass-through wrapper without a domain or boundary purpose | Inline or reuse the owning implementation |
 | try/catch for control flow | Early return + typed errors |
 | View does orchestration | `operations/` function |
 | Duplicate client/server rule | Single source (API contract + generated types) |

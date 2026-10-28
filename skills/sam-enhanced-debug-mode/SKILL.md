@@ -1,7 +1,6 @@
 ---
 name: sam-enhanced-debug-mode
 description: Investigates bugs by tracing symptoms to their real root cause before proposing fixes. Uses multiple perspectives (data flow, state, timing, contracts, architecture) to distinguish systemic issues from local bugs. Rejects hacks and symptom patches. Use when debugging, investigating errors, triaging failures, fixing bugs, or when the user asks for root cause analysis.
-disable-model-invocation: true
 ---
 
 # Root-Cause Debugging
@@ -17,7 +16,7 @@ Be thorough. **Do not assume.** If a question can be answered by reading code, r
 - User reports a bug, error, unexpected behavior, or regression
 - Before implementing any fix (investigate first unless the user explicitly asks for a blind patch)
 - After a fix attempt failed or the issue recurred
-- When stack traces, logs, or test failures point at a line but the *why* is unclear
+- When stack traces, logs, or test failures point at a line but the _why_ is unclear
 
 For Sentry-specific production triage, also load `sam-root-cause-debugging`. This skill is the general framework; that skill adds Sentry MCP workflow.
 
@@ -41,11 +40,11 @@ Do not propose fixes in this phase.
 
 ## Phase 2 — Separate symptom from cause
 
-| Symptom | Root cause |
-|---------|------------|
-| Where the error surfaces (throw site, UI glitch, failed assertion) | Why invalid state or missing precondition existed |
-| Last frame in a stack trace | Earliest point your code allowed bad data or wrong branch |
-| User-visible wrong output | Upstream logic, contract, or lifecycle that produced it |
+| Symptom                                                            | Root cause                                                |
+| ------------------------------------------------------------------ | --------------------------------------------------------- |
+| Where the error surfaces (throw site, UI glitch, failed assertion) | Why invalid state or missing precondition existed         |
+| Last frame in a stack trace                                        | Earliest point your code allowed bad data or wrong branch |
+| User-visible wrong output                                          | Upstream logic, contract, or lifecycle that produced it   |
 
 Build a **causal chain** backward from the failure:
 
@@ -99,13 +98,13 @@ Inspect the same failure through each lens. Not every lens applies; use all that
 
 After the lenses above, classify:
 
-| Signal | Likely nature |
-|--------|----------------|
-| Same bug in multiple features sharing one pattern | **Architectural** — wrong abstraction, ownership, or coupling |
-| Violates a stated invariant in one module | **Local** — fix logic in that module |
-| Fix requires touching 5+ unrelated call sites | **Architectural** — missing primitive or wrong layer |
-| Single wrong conditional / missing guard | **Local** — targeted fix |
-| Recurring class of bugs (races, stale cache, double-submit) | **Architectural** — structural prevention |
+| Signal                                                      | Likely nature                                                 |
+| ----------------------------------------------------------- | ------------------------------------------------------------- |
+| Same bug in multiple features sharing one pattern           | **Architectural** — wrong abstraction, ownership, or coupling |
+| Violates a stated invariant in one module                   | **Local** — fix logic in that module                          |
+| Fix requires touching 5+ unrelated call sites               | **Architectural** — missing primitive or wrong layer          |
+| Single wrong conditional / missing guard                    | **Local** — targeted fix                                      |
+| Recurring class of bugs (races, stale cache, double-submit) | **Architectural** — structural prevention                     |
 
 **Do not default to architecture** for drama; **do not default to local** to avoid harder fixes. Let evidence decide.
 
@@ -141,21 +140,26 @@ Before any fix, produce a concise root-cause summary:
 
 ```markdown
 ## Root cause
+
 [1–2 sentences: the fixable gap — wrong assumption, missing invariant, bad ownership, etc.]
 
 ## Causal chain
+
 1. [failure]
 2. [immediate trigger] — evidence: …
 3. [deeper condition] — evidence: …
 4. [root cause] — evidence: …
 
 ## Classification
+
 [Local bug | Architectural issue | Contract/env mismatch | Data/timing]
 
 ## Ruled out
+
 - [hypothesis] — [why not]
 
 ## Confidence
+
 [Confirmed | Likely — needs X to confirm]
 ```
 
@@ -210,15 +214,19 @@ Keep responses lean unless the user asks for depth:
 
 ```markdown
 ## Root cause
+
 …
 
 ## Evidence
+
 - …
 
 ## Fix approach
+
 [what changes, at which layer, and why this is not a patch]
 
 ## Verification
+
 - …
 ```
 

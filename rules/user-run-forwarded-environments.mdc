@@ -1,0 +1,12 @@
+---
+description: Mandatory — only the user executes forwarded-environment and runtime-credential diagnostics
+alwaysApply: true
+---
+
+# Mandatory: the user runs forwarded-environment scripts
+
+- Never start, connect to, reuse, or execute commands against a forwarded environment yourself, including read-only checks. This includes production, staging, develop, and feature environments; `runpf`, `kubectl port-forward`, `FORWARDED_ENVIRONMENT`, forwarded database/API connections, and Django shells or jobs targeting those environments.
+- Always paste the complete script and the exact run command for Sam to execute himself. Let Sam choose the environment and port, then wait for his pasted output before drawing conclusions that require it.
+- Never execute the script, a subset, a connection probe, or equivalent commands through another tool or a subagent. Local syntax-only checks that do not load environment settings, credentials, or remote data are allowed.
+- Never bypass this boundary by loading or decrypting runtime secrets (including Google Secret Manager/KMS or cloud credentials) to call production/staging vendor APIs such as Unit directly. Paste that diagnostic script for Sam to run instead. Never ask him to paste credentials; request only redacted results.
+- Requests to investigate, verify, query a vendor, or use read-only access do not waive this mandatory rule. Only Sam explicitly changing this rule can change the boundary.

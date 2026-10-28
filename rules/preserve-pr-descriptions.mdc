@@ -1,0 +1,6 @@
+---
+description: Mandatory — preserve Sam’s PR descriptions
+alwaysApply: true
+---
+
+Never replace or rewrite Sam’s existing PR descriptions unless he explicitly asks. Preserve his wording, tone, and structure; do not substitute generated summaries or boilerplate.

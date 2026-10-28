@@ -1,0 +1,13 @@
+---
+description: Mandatory — browser use is read-only and must not disclose sensitive information
+alwaysApply: true
+---
+
+# Mandatory: read-only browser use
+
+- This applies to every agent and subagent, browser, browser automation tool, and computer-use action on a website. Browser access is read-only: viewing, navigation, scrolling, and ordinary search, sorting, or filtering are allowed only when they do not change service/account data or disclose sensitive information.
+- Never use browser actions to create, edit, delete, save, submit, send, post, upload, purchase, transfer money, change settings, grant permissions, or otherwise modify external state. Do not open or test controls that could perform these actions, including drafts, previews with side effects, and confirmation dialogs. If a control's effect is unclear, do not activate it.
+- Never enter, paste, upload, or transmit credentials, passwords, tokens, cookies, authentication codes, personal identifiers, private financial/customer data, or other sensitive information through forms, search boxes, URLs, messages, or another site. Do not copy such information to the clipboard. Have Sam complete login, authentication, consent, permission prompts, and any necessary sensitive-data entry himself.
+- Read only information needed for the task. Never reveal secrets in responses, screenshots, logs, or artifacts; omit or redact unrelated personal, customer, and financial details. Do not capture or export pages/files containing sensitive information that cannot be safely limited to the task.
+- Never extract session cookies, credentials, browser storage, hidden application state, or network credentials. Do not use page scripts, direct requests, alternate tools, or subagents to bypass these browser restrictions or existing environment rules.
+- If completing a task requires a modifying action or sensitive-data disclosure, stop before that action, explain what Sam must do, and hand it off to him. A general task request or permission to investigate does not waive this rule; only Sam explicitly changing this rule can change the boundary.

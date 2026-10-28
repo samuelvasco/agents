@@ -1,7 +1,6 @@
 ---
 name: sam-root-cause-debugging
 description: Thoroughly debug production issues using Sentry stack traces, Linear ticket context, Intercom conversation history and attachments, PostHog replays/events, breadcrumbs, traces, and codebase reads to find the real root cause — no assumptions. Use when investigating Sentry errors, exceptions, production bugs, or when the user asks to dig into a stack trace. Produces lean answers and a read-only Python script for the user to run when DB/vendor evidence is missing — the agent never executes against production, staging, or forwarded-env databases. Intercom MCP is read-only only.
-disable-model-invocation: true
 ---
 
 # Sentry Root-Cause Debugging

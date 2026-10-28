@@ -16,9 +16,9 @@ description: >-
 ## Rules
 
 - **Simplest correct plan** — smallest change that meets stated requirements and stays safe.
-- **Repo-native** — read `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, and skim for one exemplar of the same kind of work before proposing structure.
+- **Repo-native** — read applicable `AGENTS.md` files and their authoritative rule and skill locations, then find one exemplar of the same kind of work before proposing structure. Do not assume legacy `.cursor/` paths.
 - **No scope creep** — do not add migrations, analytics, i18n, permissions, backwards compat, or “nice to haves” unless the user required them.
-- **No fantasy edge cases** — ignore hypotheticals that are unlikely or impossible here unless they have **material** impact (data loss, security, money, broken invariants). Defer the rest explicitly or omit them.
+- **No fantasy edge cases** — require a reachable failure or explicit contract/invariant before planning defensive machinery. Severity alone, including money or security, does not establish reachability. Defer unverified concerns explicitly or omit them.
 - **Batch questions** — when clarifying, ask several focused questions at once; do not drip one question per turn.
 - **Granular todos** — the plan is the execution checklist: every step the implementer must do, in order, with **how** (file, pattern, API, command), not just **what**.
 
@@ -38,6 +38,8 @@ description: >-
 ## Phase 2: Minimal plan (draft)
 
 Skim the codebase only enough to name real files, reuse points, and the pattern to follow (grep + targeted reads — stay lean).
+
+Apply the [simplicity and necessity rubric](../sam-implementation-quality-review/SKILL.md#2-simplicity--necessity) to planned fields, defenses, names, helpers, and bounds before writing the todos.
 
 The **Implementation todos** section is the main deliverable: exhaustive, ordered, checkable. Split work until each todo is one concrete action (roughly one file or one logical unit). Vague bullets like “wire up UI” are not allowed — decompose them.
 
