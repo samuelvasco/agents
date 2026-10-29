@@ -56,6 +56,7 @@ Rows 9–12 are legitimate. Everything else is a smell.
 6. `useSyncExternalStore` for external stores — not an effect polling module state.
 7. No effect cascades — A sets state → B runs → C runs.
 8. **Banned:** ref guards (`hasRunRef`, `didInitRef`, …) to gate effects. Refactor via the tree, never patch.
+9. Before you write defensive code, you need to understand the whole context and motivation behind the implementation and consider improving the architecture instead of adding the defensive condition. ANY DEFENSIVE CONDITIONAL MUST BE ACCOMPANIED BY A SIMPLE COMMENT EXPLAINING THE WHY AND THE NECESSARY CONTEXT
 
 **Payments / money paths (if applicable):** never start charges, transfers, or
 terminal collection in `useEffect`. User commit → handler → `mutate()` /

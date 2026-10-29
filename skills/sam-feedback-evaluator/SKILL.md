@@ -98,6 +98,7 @@ When feedback touches these, verify against code — cite `path:line`:
 
 - **Security** — weigh real, evidenced risk seriously (auth, injection, secrets, data exposure, permissions) and don't wave it through as "minor." But don't invent threat models either — a security claim needs a concrete exploitable path or a rule violation, same evidence bar as everything else. "Could theoretically be misused" without a reachable path is [NO-ACTION], not [CRITICAL].
 - **Simplicity** — apply the shared rubric; one call site does not disqualify a readable domain step or I/O boundary
+- **Defensive code** — Before you write defensive code, you need to understand the whole context and motivation behind the implementation and consider improving the architecture instead of adding the defensive condition. ANY DEFENSIVE CONDITIONAL MUST BE ACCOMPANIED BY A SIMPLE COMMENT EXPLAINING THE WHY AND THE NECESSARY CONTEXT
 - **Effects/refs (frontends)** — flag ref-gated effects, mount-started auth/pay/submit, mutation `isSuccess` watchers; prefer handlers, derive-at-render, Query hooks
 - **Architecture** — one way per concern (Query vs zustand, hooks vs screen logic, `operations/` vs views)
 - **Concurrency** — double-submit, parallel mutations, stale reads; sync refs only with documented reason

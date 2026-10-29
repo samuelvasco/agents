@@ -58,6 +58,7 @@ Answer directly: **Root-cause fix / Reasonable patch / Band-aid**
 ## Fit with existing code
 - Does this follow existing patterns, or introduce a new one? If new, is that intentional/documented?
 - Any duplicated logic, dead code left behind, or inconsistency introduced?
+- Does any defensive code break this rule? Before you write defensive code, you need to understand the whole context and motivation behind the implementation and consider improving the architecture instead of adding the defensive condition. ANY DEFENSIVE CONDITIONAL MUST BE ACCOMPANIED BY A SIMPLE COMMENT EXPLAINING THE WHY AND THE NECESSARY CONTEXT
 
 ## Risk analysis
 - **Security**: new attack surface, auth/permission changes, secrets/data exposure, injection risk

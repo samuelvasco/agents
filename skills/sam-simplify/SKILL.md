@@ -15,6 +15,7 @@ Actively refactor the target code (default: current branch/uncommitted diff and 
 
 - **Never trade correctness or safety for fewer lines** — preserve real boundary validation, auth, idempotency, transaction locks (`select_for_update`), and documented concurrency guards.
 - **Clarity beats brevity** — no nested ternaries, clever one-liners, or dense comprehensions that hurt readability.
+- **Defensive code** — Before you write defensive code, you need to understand the whole context and motivation behind the implementation and consider improving the architecture instead of adding the defensive condition. ANY DEFENSIVE CONDITIONAL MUST BE ACCOMPANIED BY A SIMPLE COMMENT EXPLAINING THE WHY AND THE NECESSARY CONTEXT
 - **Ask first** before changing public APIs, schemas, or migrations, or dropping a feature path.
 
 ## Iterative Loop

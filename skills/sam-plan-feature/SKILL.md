@@ -19,6 +19,7 @@ description: >-
 - **Repo-native** — read applicable `AGENTS.md` files and their authoritative rule and skill locations, then find one exemplar of the same kind of work before proposing structure. Do not assume legacy `.cursor/` paths.
 - **No scope creep** — do not add migrations, analytics, i18n, permissions, backwards compat, or “nice to haves” unless the user required them.
 - **No fantasy edge cases** — require a reachable failure or explicit contract/invariant before planning defensive machinery. Severity alone, including money or security, does not establish reachability. Defer unverified concerns explicitly or omit them.
+- **Defensive code** — Before you write defensive code, you need to understand the whole context and motivation behind the implementation and consider improving the architecture instead of adding the defensive condition. ANY DEFENSIVE CONDITIONAL MUST BE ACCOMPANIED BY A SIMPLE COMMENT EXPLAINING THE WHY AND THE NECESSARY CONTEXT
 - **Batch questions** — when clarifying, ask several focused questions at once; do not drip one question per turn.
 - **Granular todos** — the plan is the execution checklist: every step the implementer must do, in order, with **how** (file, pattern, API, command), not just **what**.
 
